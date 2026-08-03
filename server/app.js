@@ -19,7 +19,7 @@ const normalizeUrl = (url) => (url ? url.trim().replace(/\/+$/, "") : "");
 const allowedOrigins = [
   normalizeUrl(process.env.FRONTEND_URL),
   "http://localhost:3000",
-  "https://bess-auction.vercel.app", // Explicit fallback
+  //"https://bess-auction.vercel.app", // Explicit fallback
 ].filter(Boolean);
 
 const corsOptions = {
@@ -72,7 +72,7 @@ const sessionStore = new MySQLStore(
 // Middleware
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: process.env.FRONTEND_URL || "http://localhost:3000",
     credentials: true, // Required for cookies/sessions to cross origins
   }),
 );
