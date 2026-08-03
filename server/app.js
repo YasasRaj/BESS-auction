@@ -46,9 +46,6 @@ const corsOptions = {
 // 1. Apply CORS middleware to all routes
 app.use(cors(corsOptions));
 
-// 2. Explicitly handle HTTP OPTIONS preflight requests
-app.options("*", cors(corsOptions));
-
 const PORT = process.env.PORT || 5000;
 
 // Initialize MySQL session store
