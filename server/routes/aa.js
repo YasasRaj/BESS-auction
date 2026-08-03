@@ -4,7 +4,7 @@ import Joi from "joi";
 import {
   isAuthenticated,
   authorizeRoles,
-} from "../middleware/authMiddleware.js";
+} from "../middleware/authMiddleWare.js";
 import {
   getAllAuctions,
   getAuctionById,

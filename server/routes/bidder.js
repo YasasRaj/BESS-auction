@@ -2,7 +2,7 @@ import express from "express";
 import {
   isAuthenticated,
   authorizeRoles,
-} from "../middleware/authMiddleware.js";
+} from "../middleware/authMiddleWare.js";
 import {
   getBidderStatus,
   getBidderAuctions,
