@@ -4,7 +4,7 @@ import db from "../config/db.js"; // Note: ensure file extension is included if 
 import {
   isAuthenticated,
   authorizeRoles,
-} from "../middleware/authMiddleware.js";
+} from "../middleware/authMiddleWare.js";
 const router = express.Router();
 
 /**
