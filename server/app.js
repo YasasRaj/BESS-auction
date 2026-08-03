@@ -13,39 +13,49 @@ dotenv.config();
 
 const app = express();
 
-// Helper to normalize origins (removes trailing slashes)
+// Helper to normalize origins (removes whitespace and trailing slashes)
 const normalizeUrl = (url) => (url ? url.trim().replace(/\/+$/, "") : "");
 
 const allowedOrigins = [
-  normalizeUrl(process.env.FRONTEND_URL),
   "http://localhost:3000",
-  //"https://bess-auction.vercel.app", // Explicit fallback
+  "https://bess-auction.vercel.app",
+  normalizeUrl(process.env.FRONTEND_URL),
 ].filter(Boolean);
 
 const corsOptions = {
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps, curl, or server-to-server)
+    // Allow non-browser requests (Postman, server-to-server, cURL)
     if (!origin) return callback(null, true);
 
     const normalizedOrigin = normalizeUrl(origin);
 
-    if (allowedOrigins.includes(normalizedOrigin)) {
+    // Match exact listed origins OR any Vercel preview deployment for this app
+    const isAllowed =
+      allowedOrigins.includes(normalizedOrigin) ||
+      /^https:\/\/bess-auction.*\.vercel\.app$/.test(normalizedOrigin);
+
+    if (isAllowed) {
       callback(null, true);
     } else {
       console.error(
         `[CORS Blocked] Origin: ${origin} | Allowed:`,
         allowedOrigins,
       );
-      callback(null, false);
+      callback(new Error(`CORS policy does not allow access from ${origin}`));
     }
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
 };
 
-// 1. Apply CORS middleware to all routes
+// 1. Single CORS Middleware Application
 app.use(cors(corsOptions));
+
+// 2. Trust Proxy (REQUIRED for Render / Vercel HTTPS cookies)
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
 
 const PORT = process.env.PORT || 5000;
 
@@ -53,10 +63,10 @@ const PORT = process.env.PORT || 5000;
 const MySQLStore = MySQLStoreFactory(session);
 const sessionStore = new MySQLStore(
   {
-    clearExpired: true, // Automatically remove expired sessions
-    checkExpirationInterval: 900000, // Check every 15 minutes (in ms)
-    expiration: 86400000, // 1 day session TTL (in ms)
-    createDatabaseTable: true, // Automatically create 'sessions' table if missing
+    clearExpired: true,
+    checkExpirationInterval: 900000, // 15 minutes
+    expiration: 86400000, // 1 day
+    createDatabaseTable: true,
     schema: {
       tableName: "sessions",
       columnNames: {
@@ -67,14 +77,6 @@ const sessionStore = new MySQLStore(
     },
   },
   pool,
-);
-
-// Middleware
-app.use(
-  cors({
-    origin: normalizeUrl(process.env.FRONTEND_URL) || "http://localhost:3000",
-    credentials: true, // Required for cookies/sessions to cross origins
-  }),
 );
 
 app.use(express.json());
@@ -89,9 +91,10 @@ app.use(
     saveUninitialized: false,
     cookie: {
       maxAge: 1000 * 60 * 60 * 24, // 1 day
-      httpOnly: true, // Prevents XSS client script access
-      secure: process.env.NODE_ENV === "production", // false on localhost, true on HTTPS production
-      sameSite: "lax",
+      httpOnly: true,
+      // Cross-site cookie requirements:
+      secure: process.env.NODE_ENV === "production", // Must be true on HTTPS
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Must be 'none' for cross-domain cookies
     },
   }),
 );
