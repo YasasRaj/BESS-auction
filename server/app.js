@@ -72,7 +72,7 @@ const sessionStore = new MySQLStore(
 // Middleware
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: normalizeUrl(process.env.FRONTEND_URL) || "http://localhost:3000",
     credentials: true, // Required for cookies/sessions to cross origins
   }),
 );
