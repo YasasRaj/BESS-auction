@@ -17,8 +17,9 @@ const app = express();
 const normalizeUrl = (url) => (url ? url.trim().replace(/\/+$/, "") : "");
 
 const allowedOrigins = [
-  "http://localhost:3000",
   normalizeUrl(process.env.FRONTEND_URL),
+  "http://localhost:3000",
+  "https://bess-auction.vercel.app", // Explicit fallback
 ].filter(Boolean);
 
 const corsOptions = {
