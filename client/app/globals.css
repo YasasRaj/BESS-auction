@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* Base Colors (Light Mode) */
+    --background: #ffffff;
+    --foreground: #0f172a; /* slate-900 */
+
+    /* Card & Container Elements */
+    --card: #ffffff;
+    --card-foreground: #0f172a;
+
+    /* Brand Primary Color (#7a0026) */
+    --primary: #7a0026;
+    --primary-foreground: #ffffff;
+
+    /* Secondary & Muted States */
+    --secondary: #f1f5f9; /* slate-100 */
+    --secondary-foreground: #0f172a;
+
+    --muted: #f8fafc; /* slate-50 */
+    --muted-foreground: #64748b; /* slate-500 */
+
+    /* Accent Gold (#c59e27) */
+    --accent: #c59e27;
+    --accent-foreground: #ffffff;
+
+    --destructive: #ef4444; /* red-500 */
+    --destructive-foreground: #ffffff;
+
+    /* Transition Palette between #7a0026 (Maroon) and #c59e27 (Gold) */
+    --brand-maroon: #7a0026;
+    --brand-blend-25: #8d2826;
+    --brand-blend-50: #a04f27;
+    --brand-blend-75: #b27727;
+    --brand-gold: #c59e27;
+
+    /* Borders, Inputs, Rings */
+    --border: #e2e8f0; /* slate-200 */
+    --input: #cbd5e1; /* slate-300 */
+    --ring: #7a0026;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      /* Base Colors (Dark Mode) */
+      --background: #2c2d2e;
+      --foreground: #f8fafc; /* slate-50 */
+
+      /* Card & Container Elements */
+      --card: #1f2021;
+      --card-foreground: #f8fafc;
+
+      /* Brand Primary Color (#7a0026 adjusted for dark contrast) */
+      --primary: #9e113a;
+      --primary-foreground: #ffffff;
+
+      /* Secondary & Muted States */
+      --secondary: #383a3c;
+      --secondary-foreground: #f8fafc;
+
+      --muted: #383a3c;
+      --muted-foreground: #94a3b8; /* slate-400 */
+
+      /* Accent Gold (#c59e27) */
+      --accent: #c59e27;
+      --accent-foreground: #0f172a;
+
+      --destructive: #7f1d1d; /* red-900 */
+      --destructive-foreground: #f8fafc;
+
+      /* Transition Palette (Slightly adjusted for dark context) */
+      --brand-maroon: #9e113a;
+      --brand-blend-25: #a83535;
+      --brand-blend-50: #b35831;
+      --brand-blend-75: #be7c2c;
+      --brand-gold: #c59e27;
+
+      /* Borders, Inputs, Rings */
+      --border: #404244;
+      --input: #404244;
+      --ring: #9e113a;
+    }
+  }
+}
+
+/* Map CSS variables into Tailwind classes (@theme is Tailwind v4 feature) */
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Tailwind Utility Classes for Transition Colors */
+  --color-brand-maroon: var(--brand-maroon);
+  --color-brand-blend-25: var(--brand-blend-25);
+  --color-brand-blend-50: var(--brand-blend-50);
+  --color-brand-blend-75: var(--brand-blend-75);
+  --color-brand-gold: var(--brand-gold);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
