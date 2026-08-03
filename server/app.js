@@ -12,23 +12,42 @@ import aaRoutes from "./routes/aa.js";
 dotenv.config();
 
 const app = express();
+
+// Helper to normalize origins (removes trailing slashes)
+const normalizeUrl = (url) => (url ? url.trim().replace(/\/+$/, "") : "");
+
 const allowedOrigins = [
   "http://localhost:3000",
-  process.env.FRONTEND_URL,
-].filter(Boolean); // Filters out undefined if environment variable is not set locally
+  normalizeUrl(process.env.FRONTEND_URL),
+].filter(Boolean);
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Blocked by CORS"));
-      }
-    },
-    credentials: true,
-  }),
-);
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, or server-to-server)
+    if (!origin) return callback(null, true);
+
+    const normalizedOrigin = normalizeUrl(origin);
+
+    if (allowedOrigins.includes(normalizedOrigin)) {
+      callback(null, true);
+    } else {
+      console.error(
+        `[CORS Blocked] Origin: ${origin} | Allowed:`,
+        allowedOrigins,
+      );
+      callback(null, false);
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+};
+
+// 1. Apply CORS middleware to all routes
+app.use(cors(corsOptions));
+
+// 2. Explicitly handle HTTP OPTIONS preflight requests
+app.options("*", cors(corsOptions));
 
 const PORT = process.env.PORT || 5000;
 
