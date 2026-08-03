@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
-export default function ValidateBidderPage() {
+function ValidateBidderForm() {
   const searchParams = useSearchParams();
   const initialEmail = searchParams.get("email") || "";
 
@@ -427,5 +427,19 @@ export default function ValidateBidderPage() {
         </form>
       )}
     </div>
+  );
+}
+
+export default function ValidateBidderPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="max-w-4xl mx-auto py-8 text-center text-muted-foreground">
+          Loading bidder validation form...
+        </div>
+      }
+    >
+      <ValidateBidderForm />
+    </Suspense>
   );
 }
