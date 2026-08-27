@@ -15,7 +15,7 @@ interface Auction {
   opens_at: string;
   closes_at: string;
   status: "PENDING" | "OPEN" | string;
-  user_registered?: boolean; // Track if bidder is registered
+  user_registered?: boolean;
 }
 
 interface FetchAuctionsResponse {
@@ -26,8 +26,11 @@ interface FetchAuctionsResponse {
 
 const formatDate = (dateStr?: string) => {
   if (!dateStr) return "N/A";
+
   const d = new Date(dateStr);
+
   if (isNaN(d.getTime())) return dateStr;
+
   return d.toLocaleString("en-US", {
     month: "short",
     day: "numeric",
@@ -39,6 +42,7 @@ const formatDate = (dateStr?: string) => {
 
 export default function BidderAuctionsPage() {
   const router = useRouter();
+
   const [auctions, setAuctions] = useState<Auction[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -46,99 +50,89 @@ export default function BidderAuctionsPage() {
     string | number | null
   >(null);
 
-  // Fetch / Reload auctions for Bidder view
+  /**
+   * Fetch bidder auctions.
+   *
+   * IMPORTANT:
+   * This MUST use /api/bidder/auctions.
+   */
   const reloadAuctions = useCallback(async () => {
     try {
       setLoading(true);
       setErrorMsg(null);
-      const res = await fetch(`${API_BASE_URL}/api/bidder/auctions`, {
+
+      const url = `${API_BASE_URL}/api/bidder/auctions`;
+
+      console.log("Fetching bidder auctions:", url);
+
+      const res = await fetch(url, {
         credentials: "include",
       });
+
       const data = (await res.json()) as FetchAuctionsResponse;
 
       if (res.ok && data.auctions) {
-        // Filter strictly for PENDING and OPEN auctions
-        const filtered = data.auctions.filter((a) => {
-          const status = a.status.toUpperCase();
+        const filtered = data.auctions.filter((auction) => {
+          const status = auction.status.toUpperCase();
+
           return status === "PENDING" || status === "OPEN";
         });
+
         setAuctions(filtered);
       } else {
         setErrorMsg(data.message || "Failed to load auctions list.");
       }
     } catch (err: unknown) {
-      console.error("Error fetching auctions:", err);
+      console.error("Error fetching bidder auctions:", err);
+
       const msg =
         err instanceof Error ? err.message : "A network error occurred.";
+
       setErrorMsg(msg);
     } finally {
       setLoading(false);
     }
   }, []);
 
+  /**
+   * Initial load.
+   */
   useEffect(() => {
-    let ignore = false;
+    reloadAuctions();
+  }, [reloadAuctions]);
 
-    async function loadInitialData() {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/bidder/auctions`, {
-          credentials: "include",
-        });
-        const data = (await res.json()) as FetchAuctionsResponse;
-
-        if (ignore) return;
-
-        if (res.ok && data.auctions) {
-          const filtered = data.auctions.filter((a) => {
-            const status = a.status.toUpperCase();
-            return status === "PENDING" || status === "OPEN";
-          });
-          setAuctions(filtered);
-        } else {
-          setErrorMsg(data.message || "Failed to load auctions list.");
-        }
-      } catch (err: unknown) {
-        if (ignore) return;
-        console.error("Error fetching auctions:", err);
-        const msg =
-          err instanceof Error ? err.message : "A network error occurred.";
-        setErrorMsg(msg);
-      } finally {
-        if (!ignore) {
-          setLoading(false);
-        }
-      }
-    }
-
-    loadInitialData();
-
-    return () => {
-      ignore = true;
-    };
-  }, []);
-
-  // Handle Registration for Pending Auctions
+  /**
+   * Register for a pending auction.
+   */
   const handleRegister = async (id: string | number) => {
     try {
       setActionLoadingId(id);
+
       const res = await fetch(
         `${API_BASE_URL}/api/bidder/auctions/${id}/register`,
         {
           method: "POST",
           credentials: "include",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
         },
       );
 
       if (res.ok) {
         alert("Successfully registered for auction!");
-        reloadAuctions();
+
+        await reloadAuctions();
       } else {
-        const errData = (await res.json()) as { message?: string };
+        const errData = (await res.json()) as {
+          message?: string;
+        };
+
         alert(errData.message || "Failed to register for auction.");
       }
     } catch (err: unknown) {
       console.error("Error registering for auction:", err);
+
       alert("Failed to register due to a network error.");
     } finally {
       setActionLoadingId(null);
@@ -149,8 +143,10 @@ export default function BidderAuctionsPage() {
     switch (status.toUpperCase()) {
       case "OPEN":
         return "bg-emerald-100 text-emerald-800 border-emerald-300";
+
       case "PENDING":
         return "bg-blue-100 text-blue-800 border-blue-300";
+
       default:
         return "bg-muted text-muted-foreground border-border";
     }
@@ -163,9 +159,13 @@ export default function BidderAuctionsPage() {
         <Link href="/dashboard" className="hover:underline">
           Dashboard
         </Link>
+
         <span>/</span>
+
         <span className="text-muted-foreground">Bidder Portal</span>
+
         <span>/</span>
+
         <span className="text-foreground font-medium">Auctions</span>
       </div>
 
@@ -173,6 +173,7 @@ export default function BidderAuctionsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-4">
         <div>
           <h1 className="text-2xl font-bold">Available Auctions</h1>
+
           <p className="text-sm text-muted-foreground mt-0.5">
             Register for upcoming auction rounds and submit bids on active ones.
           </p>
@@ -183,6 +184,7 @@ export default function BidderAuctionsPage() {
       {errorMsg && (
         <div className="p-4 border border-destructive/30 bg-destructive/10 text-destructive text-sm rounded-lg flex items-center justify-between">
           <span>{errorMsg}</span>
+
           <button
             onClick={reloadAuctions}
             className="underline font-semibold hover:opacity-80 ml-4"
@@ -210,22 +212,34 @@ export default function BidderAuctionsPage() {
               <thead>
                 <tr className="border-b border-border bg-muted/50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   <th className="py-3 px-4">Title</th>
+
                   <th className="py-3 px-4">Ceiling Δ</th>
+
                   <th className="py-3 px-4">
-                    <span className="normal-case">η</span>_ref
+                    <span className="normal-case">η</span>
+                    _ref
                   </th>
+
                   <th className="py-3 px-4">Quarterly Cap</th>
+
                   <th className="py-3 px-4">Opens At</th>
+
                   <th className="py-3 px-4">Closes At</th>
+
                   <th className="py-3 px-4">Status</th>
+
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
+
               <tbody className="divide-y divide-border">
                 {auctions.map((auction) => {
                   const statusUpper = auction.status.toUpperCase();
+
                   const isOpen = statusUpper === "OPEN";
+
                   const isPending = statusUpper === "PENDING";
+
                   const isActionBusy = actionLoadingId === auction.id;
 
                   return (
@@ -243,7 +257,7 @@ export default function BidderAuctionsPage() {
                         {auction.ceiling_delta}
                       </td>
 
-                      {/* η_ref */}
+                      {/* Eta ref */}
                       <td className="py-3.5 px-4 text-foreground font-mono">
                         {auction.eta_ref}
                       </td>
@@ -263,7 +277,7 @@ export default function BidderAuctionsPage() {
                         {formatDate(auction.closes_at)}
                       </td>
 
-                      {/* Read-only Status Badge */}
+                      {/* Status */}
                       <td className="py-3.5 px-4 whitespace-nowrap">
                         <span
                           className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusBadgeStyle(
@@ -274,7 +288,7 @@ export default function BidderAuctionsPage() {
                         </span>
                       </td>
 
-                      {/* Actions: Register (Pending) / Place Bid (Open & Registered) */}
+                      {/* Actions */}
                       <td className="py-3.5 px-4 text-right whitespace-nowrap">
                         {isOpen &&
                           (auction.user_registered ? (

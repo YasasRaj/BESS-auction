@@ -363,7 +363,7 @@ export const registerForAuction = async (req, res) => {
       /** @type {import('mysql2/promise').RowDataPacket[][]} */ (
         await connection.execute(
           "SELECT id FROM auction_registrations WHERE auction_id = ? AND bidder_id = ? LIMIT 1",
-          [auctionId, bidderInfoId],
+          [auctionId, userId],
         )
       );
 
@@ -391,7 +391,7 @@ export const registerForAuction = async (req, res) => {
 
     await connection.execute(insertRegQuery, [
       auctionId,
-      bidderInfoId,
+      userId,
       initialBidsLeft,
     ]);
 
@@ -768,7 +768,7 @@ export const placeBid = async (req, res) => {
     // 5. Insert new bid
     await connection.execute(
       `INSERT INTO bids (auction_id, bidder_id, bid_value, bid_time) VALUES (?, ?, ?, NOW())`,
-      [auctionId, bidderId, proposedBid],
+      [auctionId, userId, proposedBid],
     );
 
     // 6. Decrement bids_left

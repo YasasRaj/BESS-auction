@@ -6,11 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
 // --- DL Officer Panel ---
-interface DLOfficerPanelProps {
-  auctionStatus?: string;
-}
-
-function DLOfficerPanel({ auctionStatus }: DLOfficerPanelProps) {
+function DLOfficerPanel() {
   const router = useRouter();
 
   return (
@@ -105,7 +101,7 @@ function AuctionAdminPanel() {
             View Auction Details
           </Link>
 
-          {/* 3. View Bids (remove) */}
+          {/* 3. View Bids */}
           <Link
             href="/dashboard/aa/bids"
             className="px-4 py-2.5 bg-accent text-accent-foreground rounded hover:opacity-90 transition font-medium text-sm text-center shadow-sm col-span-1 sm:col-span-2"
@@ -327,6 +323,26 @@ function BidderPanel({ isValidated, statusText }: BidderPanelProps) {
   );
 }
 
+// --- Certifier Panel ---
+function CertifierPanel() {
+  return (
+    <div className="mt-6 p-4 border border-border rounded-lg bg-card text-card-foreground shadow-sm">
+      <h2 className="text-lg font-semibold mb-3 text-primary">
+        Certifier Actions
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {/* View & Certify Auctions */}
+        <Link
+          href="/dashboard/certifier/auctions"
+          className="px-4 py-2.5 bg-primary text-primary-foreground rounded hover:opacity-90 transition font-medium text-sm text-center shadow-sm col-span-1 sm:col-span-2"
+        >
+          View Auction List & Certify Results
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const { user, loading, logout } = useAuth();
   const [bidderStatus, setBidderStatus] = useState<string>("UNKNOWN");
@@ -347,6 +363,8 @@ export default function DashboardPage() {
     normalizedRole === "admin";
 
   const isBidder = normalizedRole === "bidder";
+
+  const isCertifier = normalizedRole === "certifier";
 
   // Fetch bidder status dynamically from backend route (/api/bidder/status)
   useEffect(() => {
@@ -462,10 +480,13 @@ export default function DashboardPage() {
       </div>
 
       {/* Render DL Officer Action Panel */}
-      {isDLOfficer && <DLOfficerPanel auctionStatus="AWARD_RELEASED" />}
+      {isDLOfficer && <DLOfficerPanel />}
 
       {/* Render Auction Admin Action Panel */}
       {isAuctionAdmin && <AuctionAdminPanel />}
+
+      {/* Render Auction Admin Action Panel */}
+      {isCertifier && <CertifierPanel />}
 
       {/* Render Bidder Action Panel */}
       {isBidder && (

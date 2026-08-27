@@ -4,10 +4,12 @@ import dotenv from "dotenv";
 import session from "express-session";
 import MySQLStoreFactory from "express-mysql-session";
 import pool from "./config/db.js"; // MySQL connection pool
+import cron from "node-cron";
 import userRoutes from "./routes/userRoutes.js";
 import dlRoutes from "./routes/dl.js";
 import bidderRoutes from "./routes/bidder.js";
 import aaRoutes from "./routes/aa.js";
+import certifierRoutes from "./routes/certifier.js";
 
 dotenv.config();
 
@@ -110,6 +112,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/dl", dlRoutes);
 app.use("/api/bidder", bidderRoutes);
 app.use("/api/aa", aaRoutes);
+app.use("/api/certifier", certifierRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
@@ -124,6 +127,23 @@ app.get("/", (req, res) => {
 // Start Server
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
+});
+
+// Runs every minute to automatically shift auction statuses based on time
+cron.schedule("* * * * *", async () => {
+  try {
+    // Open pending auctions when opens_at is reached
+    await pool.query(
+      "UPDATE auctions SET status = 'OPEN' WHERE status = 'PENDING' AND opens_at <= NOW()",
+    );
+
+    // Close open auctions when closes_at is reached
+    await pool.query(
+      "UPDATE auctions SET status = 'CLOSED' WHERE status = 'OPEN' AND closes_at <= NOW()",
+    );
+  } catch (error) {
+    console.error("Auction background sync error:", error);
+  }
 });
 
 export default app;
