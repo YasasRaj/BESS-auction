@@ -92,11 +92,10 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
+      maxAge: 1000 * 60 * 60 * 24,
       httpOnly: true,
-      // Cross-site cookie requirements:
-      secure: process.env.NODE_ENV === "production", // Must be true on HTTPS
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Must be 'none' for cross-domain cookies
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
     },
   }),
 );
