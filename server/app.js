@@ -84,18 +84,30 @@ const sessionStore = new MySQLStore(
 app.use(express.json());
 
 // Session Middleware Configuration
+const isProduction = process.env.NODE_ENV === "production";
+
+app.set("trust proxy", 1);
+
 app.use(
   session({
     key: "session_cookie_name",
-    secret: process.env.SESSION_SECRET || "super_secret_key_change_in_prod",
+    secret: process.env.SESSION_SECRET,
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
+
     cookie: {
       maxAge: 1000 * 60 * 60 * 24,
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+
+      // HTTPS in production, HTTP locally
+      secure: isProduction,
+
+      // Vercel -> Render requires cross-site cookie
+      sameSite: isProduction ? "none" : "lax",
+
+      // Optional, but makes the intention explicit
+      path: "/",
     },
   }),
 );
