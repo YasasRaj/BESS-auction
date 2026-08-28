@@ -9,10 +9,7 @@ export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    console.log("=== LOGIN DEBUG ===");
-    console.log("Email received:", email);
-    console.log("Password received:", password ? "[PROVIDED]" : "[MISSING]");
-
+    // 1. Basic validation
     if (!email || !password) {
       return res.status(400).json({
         message: "Email and password are required.",
@@ -21,8 +18,7 @@ export const loginUser = async (req, res) => {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    console.log("Normalized email:", normalizedEmail);
-
+    // 2. Query user by email
     const [users] = await pool.query(
       `SELECT id, first_name, last_name, email, phone_number, password, type, validated 
        FROM users 
@@ -30,10 +26,7 @@ export const loginUser = async (req, res) => {
       [normalizedEmail],
     );
 
-    console.log("Users found:", users.length);
-
     if (users.length === 0) {
-      console.log("❌ USER NOT FOUND");
       return res.status(401).json({
         message: "Invalid email or password.",
       });
@@ -41,23 +34,14 @@ export const loginUser = async (req, res) => {
 
     const user = users[0];
 
-    console.log("User ID:", user.id);
-    console.log("User email from DB:", user.email);
-    console.log("Password hash exists:", !!user.password);
-    console.log("Password hash prefix:", user.password?.substring(0, 10));
-
+    // 3. Verify password against hashed password
     const isMatch = await bcrypt.compare(password, user.password);
 
-    console.log("Password match:", isMatch);
-
     if (!isMatch) {
-      console.log("❌ PASSWORD DOES NOT MATCH");
       return res.status(401).json({
         message: "Invalid email or password.",
       });
     }
-
-    console.log("✅ LOGIN SUCCESS");
 
     const userData = {
       id: user.id,
@@ -69,15 +53,16 @@ export const loginUser = async (req, res) => {
       validated: Boolean(user.validated),
     };
 
+    // 🔒 SAVE USER TO SESSION
     req.session.user = userData;
 
+    // 4. Return success response
     return res.status(200).json({
       message: "Login successful.",
       user: userData,
     });
   } catch (error) {
     console.error("Error in loginUser controller:", error);
-
     return res.status(500).json({
       message: error.message || "Failed to log in user.",
     });
@@ -89,20 +74,10 @@ export const loginUser = async (req, res) => {
  * @desc    Get current session user profile
  */
 export const getMe = async (req, res) => {
-  console.log("========== GET ME ==========");
-  console.log("Session ID:", req.sessionID);
-  console.log("Session:", req.session);
-  console.log("Cookie header:", req.headers.cookie);
-
-  if (req.session?.user) {
-    return res.status(200).json({
-      user: req.session.user,
-    });
+  if (req.session && req.session.user) {
+    return res.status(200).json({ user: req.session.user });
   }
-
-  return res.status(401).json({
-    message: "Not authenticated.",
-  });
+  return res.status(401).json({ message: "Not authenticated." });
 };
 
 /**

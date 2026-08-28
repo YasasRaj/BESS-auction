@@ -84,22 +84,19 @@ const sessionStore = new MySQLStore(
 app.use(express.json());
 
 // Session Middleware Configuration
-const isProduction = process.env.NODE_ENV === "production";
-
-app.set("trust proxy", 1);
-
 app.use(
   session({
     key: "session_cookie_name",
-    secret: process.env.SESSION_SECRET,
+    secret: process.env.SESSION_SECRET || "super_secret_key_change_in_prod",
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
     cookie: {
-      maxAge: 1000 * 60 * 60 * 24,
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
+      // Cross-site cookie requirements:
+      secure: process.env.NODE_ENV === "production", // Must be true on HTTPS
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Must be 'none' for cross-domain cookies
     },
   }),
 );
