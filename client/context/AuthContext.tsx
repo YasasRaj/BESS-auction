@@ -3,7 +3,8 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
+const API_BASE_URL =
+  process.env.NODE_ENV === "production" ? "" : "http://localhost:5000";
 
 // Complete User interface with optional role & office metadata
 export interface User {
