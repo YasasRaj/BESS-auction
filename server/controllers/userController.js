@@ -53,8 +53,6 @@ export const loginUser = async (req, res) => {
       validated: Boolean(user.validated),
     };
 
-    console.log("LOGIN SESSION BEFORE SAVE:", req.session);
-
     // 🔒 SAVE USER TO SESSION
     req.session.user = userData;
 
@@ -75,27 +73,11 @@ export const loginUser = async (req, res) => {
  * @route   GET /api/users/me
  * @desc    Get current session user profile
  */
-// export const getMe = async (req, res) => {
-//   if (req.session && req.session.user) {
-//     return res.status(200).json({ user: req.session.user });
-//   }
-//   return res.status(401).json({ message: "Not authenticated." });
-// };
 export const getMe = async (req, res) => {
-  console.log("=== GET ME DEBUG ===");
-  console.log("Session ID:", req.sessionID);
-  console.log("Session:", req.session);
-  console.log("Cookies:", req.headers.cookie);
-
   if (req.session && req.session.user) {
-    return res.status(200).json({
-      user: req.session.user,
-    });
+    return res.status(200).json({ user: req.session.user });
   }
-
-  return res.status(401).json({
-    message: "Not authenticated.",
-  });
+  return res.status(401).json({ message: "Not authenticated." });
 };
 
 /**
