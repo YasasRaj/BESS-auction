@@ -8,8 +8,7 @@ export default function SubmitApplicantsPage() {
   const { user, loading } = useAuth();
 
   // Base API URL pointing to your backend server (defaults to http://localhost:5000)
-  const API_BASE_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
   // Form State initialized with default testing/demo values
   const [formData, setFormData] = useState({

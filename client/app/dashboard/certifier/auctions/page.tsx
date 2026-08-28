@@ -4,7 +4,11 @@ import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+import { apiFetch } from "@/lib/api";
+
+const res = await apiFetch("/api/users/me");
+
+const data = await res.json();
 
 interface Auction {
   id: number;
