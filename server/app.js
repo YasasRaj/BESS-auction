@@ -99,8 +99,14 @@ app.use(
     cookie: {
       maxAge: 1000 * 60 * 60 * 24,
       httpOnly: true,
+
+      // HTTPS in production, HTTP locally
       secure: isProduction,
+
+      // Vercel -> Render requires cross-site cookie
       sameSite: isProduction ? "none" : "lax",
+
+      // Optional, but makes the intention explicit
       path: "/",
     },
   }),
