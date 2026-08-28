@@ -58,10 +58,27 @@ export const loginUser = async (req, res) => {
     // 🔒 SAVE USER TO SESSION
     req.session.user = userData;
 
-    // 4. Return success response
-    return res.status(200).json({
-      message: "Login successful.",
-      user: userData,
+    console.log("=== LOGIN SESSION DEBUG ===");
+    console.log("Session ID:", req.sessionID);
+    console.log("Session after user assignment:", req.session);
+    console.log("Cookie header:", req.headers.cookie);
+
+    req.session.save((err) => {
+      if (err) {
+        console.error("SESSION SAVE ERROR:", err);
+
+        return res.status(500).json({
+          message: "Failed to save session.",
+        });
+      }
+
+      console.log("SESSION SAVED SUCCESSFULLY");
+      console.log("Session ID:", req.sessionID);
+
+      return res.status(200).json({
+        message: "Login successful.",
+        user: userData,
+      });
     });
   } catch (error) {
     console.error("Error in loginUser controller:", error);
