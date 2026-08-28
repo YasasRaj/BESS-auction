@@ -56,6 +56,21 @@ export const loginUser = async (req, res) => {
     // 🔒 SAVE USER TO SESSION
     req.session.user = userData;
 
+    req.session.save((err) => {
+      if (err) {
+        console.error("SESSION SAVE ERROR:", err);
+
+        return res.status(500).json({
+          message: "Failed to create login session.",
+        });
+      }
+
+      return res.status(200).json({
+        message: "Login successful.",
+        user: userData,
+      });
+    });
+
     // 4. Return success response
     return res.status(200).json({
       message: "Login successful.",
@@ -74,10 +89,20 @@ export const loginUser = async (req, res) => {
  * @desc    Get current session user profile
  */
 export const getMe = async (req, res) => {
-  if (req.session && req.session.user) {
-    return res.status(200).json({ user: req.session.user });
+  console.log("========== GET ME ==========");
+  console.log("Session ID:", req.sessionID);
+  console.log("Session:", req.session);
+  console.log("Cookie header:", req.headers.cookie);
+
+  if (req.session?.user) {
+    return res.status(200).json({
+      user: req.session.user,
+    });
   }
-  return res.status(401).json({ message: "Not authenticated." });
+
+  return res.status(401).json({
+    message: "Not authenticated.",
+  });
 };
 
 /**
